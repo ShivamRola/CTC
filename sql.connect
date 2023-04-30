@@ -1,0 +1,93 @@
+import mysql.connector
+def Creds():
+    print('WARNING: Please use only lowercase letters when answering questions. Thank You')
+    cred= input('Do You want to Sign up or Log in? ')
+    if cred == 'sign up':
+        Signup()
+    if cred == 'log in':
+        Connect()
+def Signup():
+    connection = mysql.connector.connect(user = 'root', database = 'ctc', password = 'Sr@08302007')
+    cursor= connection.cursor()
+    mycursor = connection.cursor()
+    user_name = input('What is your name? ')
+    addData = ("INSERT INTO bank (name, money) VALUES ((%s),(%s))")
+    val = (user_name, '0')
+    cursor.execute(addData, val,)
+    print ("Your new id is",cursor.lastrowid)
+    connection.commit()
+    cursor.close()
+    connection.close()
+    ask = input('Do you want to log in? ')
+    if ask == 'yes':
+        Connect()
+    elif ask == 'no':
+        print('Ok, we will sign you out')
+    else:
+        print('That is invalid, please try again')
+        Signup()
+
+def Connect():
+    connection = mysql.connector.connect(user = 'root', database = 'ctc', password = 'Sr@08302007')
+    cursor= connection.cursor()
+    mycursor = connection.cursor()
+    Name = input('What is your name? ')
+    user_Id = int(input('What is your ID? '))
+    try:
+      searchData = ("SELECT name FROM bank WHERE ID =(%s)")
+      inpt=(user_Id,)
+      mycursor.execute(searchData, inpt,)    
+    except: 
+        print('That is invalid, please try again')
+        Connect()
+    myresult = mycursor.fetchall()
+    for result in myresult:
+     print(result)
+     Confirm = input('Is this you?: ')
+     if Confirm == 'yes':
+        What_do = input('What will you be doing today: Withdraw, Deposit, Check Balance, Delete Account ')
+        if What_do =='withdraw':
+            try:
+             W_Ammount = int(input('How much money would you like to withdraw? '))
+            except:
+               print('Please enter a number next time')
+               Connect()
+            newMoney = "UPDATE bank SET money= money - (%s) WHERE ID =(%s)"
+            updateMon = (W_Ammount, user_Id,)
+            mycursor.execute(newMoney, updateMon,)
+            printTable =('SELECT * FROM bank WHERE ID =(%s)')
+            forprint = (user_Id,)
+            mycursor.execute(printTable, forprint,)
+            for result in mycursor:
+               print(result)
+
+        elif What_do =='deposit':
+            try:
+              D_Ammount = int(input('How much money would you like to deposit? '))
+            except:
+               print('Please enter a number next time')
+               Connect()
+            newMon = (f"UPDATE bank SET money= money + {D_Ammount} WHERE ID ={user_Id}")
+            mycursor.execute(newMon,)
+            print_Table =('SELECT * FROM bank WHERE ID =(%s)')
+            for_print = (user_Id,)
+            mycursor.execute(print_Table, for_print,)
+            for result in mycursor:
+              print(result)
+        elif What_do == 'check balance':
+           Check_b = (f'SELECT money FROM bank WHERE ID ={user_Id}')
+           mycursor.execute(Check_b)
+           for result in mycursor:
+              print('Your Balance is',result)
+        elif What_do == 'delete account':
+           sql = f"DELETE FROM bank WHERE ID = {user_Id}"
+           mycursor.execute(sql)
+           print('Account deleted')
+     elif Confirm == 'no':
+          print('We will take you back to the sign in screen')
+          Creds()
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+Creds()
